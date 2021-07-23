@@ -9,7 +9,7 @@ app.use(cors());
 app.get("/institutions", async function (req, res, next) {
   const institutions = await getInstitutions();
   console.log(institutions);
-  res.json(institutions);
+  res.json({ institutions });
 });
 
 app.get("/repositories", async function (req, res, next) {
@@ -41,8 +41,15 @@ async function getInstitutions() {
   const institutions = await client
     .db("statistics")
     .collection("institutions")
-    .find({})
-    .limit(3)
+    .find(
+      {},
+      {
+        projection: {
+          "orgs.repos.commit_activities": 0,
+          "repos.commit_activities": 0,
+        },
+      }
+    )
     .toArray();
   await terminateConnection(client);
   return institutions;
@@ -53,8 +60,14 @@ async function getRepositories() {
   const repos = await client
     .db("statistics")
     .collection("repositories")
-    .find({})
-    .limit(3)
+    .find(
+      {},
+      {
+        projection: {
+          commit_activities: 0,
+        },
+      }
+    )
     .toArray();
   await terminateConnection(client);
   return repos;
