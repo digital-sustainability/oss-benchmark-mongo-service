@@ -4,17 +4,40 @@ const cors = require("cors");
 const app = express();
 const MongoClient = require("mongodb").MongoClient;
 
+let data;
+
+getData().then((d) => {
+  data = d;
+});
+
+async function getData() {
+  return {
+    institutions: await getInstitutions(),
+    repositories: await getRepositories(),
+  };
+}
+
+setInterval(function () {
+  getData().then((d) => {
+    data = d;
+  });
+}, 3600000);
+
 app.use(cors());
 
 app.get("/institutions", async function (req, res, next) {
-  const institutions = await getInstitutions();
-  console.log(institutions);
+  if (!data || !data.institutions) {
+    data = await getData();
+  }
+  const institutions = data.institutions;
   res.json({ institutions });
 });
 
 app.get("/repositories", async function (req, res, next) {
-  const repos = await getRepositories();
-  console.log(repos);
+  if (!data || !data.repositories) {
+    data = await getData();
+  }
+  const repos = data.repositories;
   res.json(repos);
 });
 
@@ -23,7 +46,6 @@ app.listen(5000, function () {
 });
 
 async function createConnection() {
-  console.log(process.env.MONGO_READ);
   const client = new MongoClient(process.env.MONGO_READ, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
