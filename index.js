@@ -14,6 +14,7 @@ async function getData() {
   return {
     institutions: await getInstitutions(),
     repositories: await getRepositories(),
+    users: await getUsers(),
   };
 }
 
@@ -39,6 +40,14 @@ app.get("/repositories", async function (req, res, next) {
   }
   const repos = data.repositories;
   res.json(repos);
+});
+
+app.get("/users", async function (req, res, next) {
+  if (!data || !data.users) {
+    data = await getData();
+  }
+  const users = data.users;
+  res.json(users);
 });
 
 app.listen(5000, function () {
@@ -93,4 +102,15 @@ async function getRepositories() {
     .toArray();
   await terminateConnection(client);
   return repos;
+}
+
+async function getUsers() {
+  const client = await createConnection();
+  const users = await client
+    .db("statistics")
+    .collection("users")
+    .find()
+    .toArray();
+  await terminateConnection(client);
+  return users;
 }
