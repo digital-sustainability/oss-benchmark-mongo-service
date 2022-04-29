@@ -72,15 +72,7 @@ async function getInstitutions() {
   const institutions = await client
     .db("statistics")
     .collection("institutions")
-    .find(
-      {},
-      {
-        projection: {
-          "orgs.repos.commit_activities": 0,
-          "repos.commit_activities": 0,
-        },
-      }
-    )
+    .find({})
     .toArray();
   await terminateConnection(client);
   return institutions;
